@@ -36,7 +36,7 @@ function aspectText({ freeInvokes, name, type }) {
 }
 
 function entitiesEmbed() {
-  return new MessageEmbed().addFields(
+  return new MessageEmbed().setColor(0x5e81ac).addFields(
     entities.map(({ aspects, name }) => ({
       name,
       value: aspects.length > 0 ? aspects.map(aspectText) : `*No aspects yet*`,
@@ -103,7 +103,7 @@ discordClient.on("message", (message) => {
 
       case "|help":
         message.channel.send(
-          new MessageEmbed().addFields({
+          new MessageEmbed().setColor(0xebcb8b).addFields({
             name: "Commands",
             value: ["`|add *<entity>* *<aspect>*`", "`|new *<entity>*`"],
           })
