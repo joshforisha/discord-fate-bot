@@ -1,6 +1,7 @@
 require("dotenv").config();
 
 const { Client } = require("discord.js");
+const Fs = require("fs");
 
 const ensp = " ";
 
@@ -9,7 +10,7 @@ const AspectType = {
   Boost: "BOOST",
 };
 
-const entities = [];
+let entities = [];
 
 const discordClient = new Client();
 
@@ -99,11 +100,16 @@ function rating(score) {
   }
 }
 
+function saveEntities() {
+  Fs.writeFile("entities.json", JSON.stringify(entities), (err) => {
+    if (err) throw err;
+  });
+}
+
 function sendEntities(channel) {
   if (entities.length < 1) {
     return channel.send("***No entities***");
   }
-
   channel.send("", {
     embed: {
       color: 0x5e81ac,
@@ -114,6 +120,7 @@ function sendEntities(channel) {
       })),
     },
   });
+  saveEntities();
 }
 
 function sendUsage(channel) {
@@ -123,44 +130,66 @@ function sendUsage(channel) {
       color: 0xebcb8b,
       fields: [
         {
-          name: "|add *entity* *aspect*",
-          value: "Add *aspect* to *entity*",
+          name: "|",
+          value: "Output the current entities list",
         },
         {
-          name: "|add1 *entity* *aspect*",
-          value: "Add *aspect* to *entity* with 1 free invoke",
+          name: "|aspect- *entity* *aspect*",
+          value: ["Remove *aspect* from *entity*", "Shortcut: `|A`"],
         },
         {
-          name: "|add2 *entity* *aspect*",
-          value: "Add *aspect* to *entity* with 2 free invokes",
+          name: "|aspect+ *entity* *aspect*",
+          value: ["Add *aspect* to *entity*", "Shortcut: `|a`"],
+        },
+        {
+          name: "|aspect+1 *entity* *aspect*",
+          value: [
+            "Add *aspect* to *entity* with 1 free invoke",
+            "Shortcut: `|a1`",
+          ],
+        },
+        {
+          name: "|aspect+2 *entity* *aspect*",
+          value: [
+            "Add *aspect* to *entity* with 2 free invokes",
+            "Shortcut: `|a2`",
+          ],
         },
         {
           name: "|boost *entity* *aspect*",
-          value: "Add a boost *aspect* to *entity* (with 1 free invoke)",
+          value: [
+            "Add a boost *aspect* to *entity* (with 1 free invoke)",
+            "Shortcut: `|b`",
+          ],
         },
         {
-          name: "|del *entity*",
-          value: "Deletes *entity*",
+          name: "|entity+ *entity*",
+          value: ["Create a new *entity*", "Shortcut: `|e`"],
         },
         {
-          name: "|fe+ *entity* *aspect*",
-          value: "Add a free invoke to *aspect* on *entity*",
+          name: "|entity- *entity*",
+          value: ["Deletes *entity*", "Shortcut: `|E`"],
         },
         {
-          name: "|fe- *entity* *aspect*",
-          value: "Remove a free invoke to *aspect* on *entity*",
+          name: "|invoke+ *entity* *aspect*",
+          value: [
+            "Add a free invoke to *aspect* on *entity*",
+            "Shortcut: `|i`",
+          ],
         },
         {
-          name: "|new *entity*",
-          value: "Create a new *entity*",
-        },
-        {
-          name: "|rm *entity* *aspect*",
-          value: "Remove *aspect* from *entity*",
+          name: "|invoke- *entity* *aspect*",
+          value: [
+            "Remove a free invoke to *aspect* on *entity*",
+            "Shortcut: `|I`",
+          ],
         },
         {
           name: "|roll *rating*",
-          value: "Roll 4dF with *rating* of positive or negative number",
+          value: [
+            "Roll 4dF with *rating* of positive or negative number",
+            "Shortcut: `|r`",
+          ],
         },
       ],
     },
@@ -182,35 +211,20 @@ discordClient.on("message", ({ content, channel }) => {
   if (content.startsWith("|")) {
     const tokens = content.split(" ");
     switch (tokens[0]) {
-      case "|add":
+      case "|":
+        sendEntities(channel);
+        break;
+
+      case "|a":
+      case "|aspect":
         if (tokens.length < 3) return sendUsage(channel);
         addAspect(tokens[1], AspectType.Aspect, tokens.slice(2).join(" "))
           .then(() => sendEntities(channel))
           .catch(sendError(channel));
         break;
 
-      case "|add1":
-        if (tokens.length < 3) return sendUsage(channel);
-        addAspect(tokens[1], AspectType.Aspect, tokens.slice(2).join(" "), 1)
-          .then(() => sendEntities(channel))
-          .catch(sendError(channel));
-        break;
-
-      case "|add2":
-        if (tokens.length < 3) return sendUsage(channel);
-        addAspect(tokens[1], AspectType.Aspect, tokens.slice(2).join(" "), 2)
-          .then(() => sendEntities(channel))
-          .catch(sendError(channel));
-        break;
-
-      case "|boost":
-        if (tokens.length < 3) return sendUsage(channel);
-        addAspect(tokens[1], AspectType.Boost, tokens.slice(2).join(" "), 1)
-          .then(() => sendEntities(channel))
-          .catch(sendError(channel));
-        break;
-
-      case "|del":
+      case "|A":
+      case "|aspect-":
         if (tokens.length !== 2) return sendUsage(channel);
         entityIndexNamed(tokens[1].toLowerCase())
           .then((e) => {
@@ -220,7 +234,50 @@ discordClient.on("message", ({ content, channel }) => {
           .catch(sendError(channel));
         break;
 
-      case "|fe+":
+      case "|a1":
+      case "|aspect+1":
+        if (tokens.length < 3) return sendUsage(channel);
+        addAspect(tokens[1], AspectType.Aspect, tokens.slice(2).join(" "), 1)
+          .then(() => sendEntities(channel))
+          .catch(sendError(channel));
+        break;
+
+      case "|a2":
+      case "|aspect+2":
+        if (tokens.length < 3) return sendUsage(channel);
+        addAspect(tokens[1], AspectType.Aspect, tokens.slice(2).join(" "), 2)
+          .then(() => sendEntities(channel))
+          .catch(sendError(channel));
+        break;
+
+      case "|b":
+      case "|boost":
+        if (tokens.length < 3) return sendUsage(channel);
+        addAspect(tokens[1], AspectType.Boost, tokens.slice(2).join(" "), 1)
+          .then(() => sendEntities(channel))
+          .catch(sendError(channel));
+        break;
+
+      case "|e":
+      case "|entity+":
+        if (tokens.length < 2) return sendUsage(channel);
+        entities.push({ aspects: [], name: tokens.slice(1).join(" ") });
+        sendEntities(channel);
+        break;
+
+      case "|E":
+      case "|entity-":
+        if (tokens.length !== 3) return sendUsage(channel);
+        entityAspectIndexNamed(tokens[1], tokens[2])
+          .then(([e, a]) => {
+            entities[e].aspects.slice(a, 1);
+            sendEntities(channel);
+          })
+          .catch(sendError(channel));
+        break;
+
+      case "|i":
+      case "|invoke+":
         if (tokens.length !== 3) return sendUsage(channel);
         entityAspectIndexNamed(tokens[1], tokens[2])
           .then(([e, a]) => {
@@ -230,7 +287,8 @@ discordClient.on("message", ({ content, channel }) => {
           .catch(sendError(channel));
         break;
 
-      case "|fe-":
+      case "|I":
+      case "|invoke-":
         if (tokens.length !== 3) return sendUsage(channel);
         entityAspectIndexNamed(tokens[1], tokens[2])
           .then(([e, a]) => {
@@ -243,27 +301,7 @@ discordClient.on("message", ({ content, channel }) => {
           .catch(sendError(channel));
         break;
 
-      case "|help":
-        sendUsage(channel);
-        break;
-
-      case "|new":
-        if (tokens.length < 2) return sendUsage(channel);
-        entities.push({ aspects: [], name: tokens.slice(1).join(" ") });
-        sendEntities(channel);
-        break;
-
-      case "|rm": {
-        if (tokens.length !== 3) return sendUsage(channel);
-        entityAspectIndexNamed(tokens[1], tokens[2])
-          .then(([e, a]) => {
-            entities[e].aspects.slice(a, 1);
-            sendEntities(channel);
-          })
-          .catch(sendError(channel));
-        break;
-      }
-
+      case "|r":
       case "|roll": {
         if (tokens.length !== 2) return sendUsage(channel);
         const mod = parseInt(tokens[1]);
@@ -284,9 +322,18 @@ discordClient.on("message", ({ content, channel }) => {
       }
 
       default:
-        channel.send(`I didn't understand the command "${tokens[0]}"`);
+        sendUsage(channel);
     }
   }
 });
+
+if (Fs.existsSync("entities.json")) {
+  Fs.readFile("entities.json", (err, data) => {
+    if (err) throw err;
+    entities = JSON.parse(data);
+  });
+} else {
+  saveEntities();
+}
 
 discordClient.login(process.env["BOT_TOKEN"]);
