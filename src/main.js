@@ -209,6 +209,10 @@ function sendUsage(channel) {
           value: ["Give a fate point to *entity*", "Shortcut: `|f`"],
         },
         {
+          name: "|fate= *points* *entity*",
+          value: ["Set fate points for the *entity*", "Shortcut: `|f=`"],
+        },
+        {
           name: "|fate- *entity*",
           value: ["Take a fate point from *entity*", "Shortcut: `|F`"],
         },
@@ -217,6 +221,13 @@ function sendUsage(channel) {
           value: [
             "Add a free invoke to *aspect* on *entity*",
             "Shortcut: `|i`",
+          ],
+        },
+        {
+          name: "|invoke= *count* *entity* *aspect*",
+          value: [
+            "Set free invokes to *count* on the *aspect* for *entity*",
+            "Shortcut: `|i=`",
           ],
         },
         {
@@ -329,6 +340,17 @@ discordClient.on("message", ({ content, channel }) => {
           .catch(sendError(channel));
         break;
 
+      case "|f=":
+      case "|fate=":
+        if (tokens.length !== 3) return sendUsage(channel);
+        entityIndexNamed(tokens[2])
+          .then((e) => {
+            entities[e].fatePoints = parseInt(tokens[1]);
+            sendEntities(channel);
+          })
+          .catch(sendError(channel));
+        break;
+
       case "|F":
       case "|fate-":
         if (tokens.length !== 2) return sendUsage(channel);
@@ -352,6 +374,17 @@ discordClient.on("message", ({ content, channel }) => {
         entityAspectIndexNamed(tokens[1], tokens[2])
           .then(([e, a]) => {
             entities[e].aspects[a].freeInvokes += 1;
+            sendEntities(channel);
+          })
+          .catch(sendError(channel));
+        break;
+
+      case "|i=":
+      case "|invoke=":
+        if (tokens.length !== 4) return sendUsage(channel);
+        entityAspectIndexNamed(tokens[2], tokens[3])
+          .then(([e, a]) => {
+            entities[e].aspects[a].freeInvokes = tokens[1];
             sendEntities(channel);
           })
           .catch(sendError(channel));
