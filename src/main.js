@@ -36,10 +36,38 @@ function die() {
   return Math.floor(Math.random() * 3) - 1;
 }
 
-function fate(num) {
+function fateDieEmoji(num) {
   if (num < 0) return ":arrow_down_small:";
   if (num > 0) return ":arrow_up_small:";
   return ":record_button:";
+}
+
+function fatePointsEmoji(points) {
+  if (typeof points === "undefined") return "";
+  switch (points) {
+    case 0:
+      return `${ensp}:zero:`;
+    case 1:
+      return `${ensp}:one:`;
+    case 2:
+      return `${ensp}:two:`;
+    case 3:
+      return `${ensp}:three:`;
+    case 4:
+      return `${ensp}:four:`;
+    case 5:
+      return `${ensp}:five:`;
+    case 6:
+      return `${ensp}:six:`;
+    case 7:
+      return `${ensp}:seven:`;
+    case 8:
+      return `${ensp}:eight:`;
+    case 9:
+      return `${ensp}:nine:`;
+    default:
+      return `${ensp}${points}`;
+  }
 }
 
 function entityAspectIndexNamed(entityStart, aspectStart) {
@@ -113,8 +141,8 @@ function sendEntities(channel) {
   channel.send("", {
     embed: {
       color: 0x5e81ac,
-      fields: entities.map(({ aspects, name }) => ({
-        name,
+      fields: entities.map(({ aspects, fatePoints, name }) => ({
+        name: `${name}${fatePointsEmoji(fatePoints)}`,
         value:
           aspects.length > 0 ? aspects.map(aspectText) : `***No aspects***`,
       })),
@@ -129,6 +157,12 @@ function sendUsage(channel) {
       title: "Commands",
       color: 0xebcb8b,
       fields: [
+        /*
+        {
+          name: "",
+          value: ["", "Shortcut: `|`"],
+        },
+        // */
         {
           name: "|",
           value: "Output the current entities list",
@@ -169,6 +203,14 @@ function sendUsage(channel) {
         {
           name: "|entity- *entity*",
           value: ["Deletes *entity*", "Shortcut: `|E`"],
+        },
+        {
+          name: "|fate+ *entity*",
+          value: ["Give a fate point to *entity*", "Shortcut: `|f`"],
+        },
+        {
+          name: "|fate- *entity*",
+          value: ["Take a fate point from *entity*", "Shortcut: `|F`"],
         },
         {
           name: "|invoke+ *entity* *aspect*",
@@ -276,6 +318,34 @@ discordClient.on("message", ({ content, channel }) => {
           .catch(sendError(channel));
         break;
 
+      case "|f":
+      case "|fate+":
+        if (tokens.length !== 2) return sendUsage(channel);
+        entityIndexNamed(tokens[1])
+          .then((e) => {
+            entities[e].fatePoints = (entities[e].fatePoints || 0) + 1;
+            sendEntities(channel);
+          })
+          .catch(sendError(channel));
+        break;
+
+      case "|F":
+      case "|fate-":
+        if (tokens.length !== 2) return sendUsage(channel);
+        entityIndexNamed(tokens[1])
+          .then((e) => {
+            if ("fatePoints" in entities[e]) {
+              if (entities[e].fatePoints === 0) {
+                delete entities[e].fatePoints;
+              } else {
+                entities[e].fatePoints = entities[e].fatePoints - 1;
+              }
+            }
+            sendEntities(channel);
+          })
+          .catch(sendError(channel));
+        break;
+
       case "|i":
       case "|invoke+":
         if (tokens.length !== 3) return sendUsage(channel);
@@ -313,7 +383,9 @@ discordClient.on("message", ({ content, channel }) => {
         const res = a + b + c + d + mod;
         channel.send({
           embed: {
-            description: `${fate(a)} ${fate(b)} ${fate(c)} ${fate(d)}${ensp}${
+            description: `${fateDieEmoji(a)} ${fateDieEmoji(b)} ${fateDieEmoji(
+              c
+            )} ${fateDieEmoji(d)}${ensp}${
               tokens[1]
             }${ensp}➤${ensp}**${res}**${rating(res)}`,
           },
