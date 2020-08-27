@@ -277,7 +277,17 @@ function sendError(channel) {
   };
 }
 
-discordClient.on("message", ({ content, channel }) => {
+discordClient.on("message", ({ author, content, channel, guild, member }) => {
+  if (author.bot) return;
+
+  const gmRole = guild.roles.cache.find((role) => role.name === "GM");
+  if (!gmRole) return sendError(channel)('A "GM" role is required');
+  const isGM = member._roles.some((roleId) => roleId === gmRole.id);
+
+  function needGM() {
+    sendError(channel)('You need the "GM" role to do that!');
+  }
+
   if (content.startsWith("|")) {
     const tokens = content.split(" ");
     switch (tokens[0]) {
@@ -287,6 +297,7 @@ discordClient.on("message", ({ content, channel }) => {
 
       case "|a":
       case "|aspect+":
+        if (!isGM) return needGM();
         if (tokens.length < 3) return sendUsage(channel);
         addAspect(tokens[1], AspectType.Aspect, tokens.slice(2).join(" "))
           .then(() => sendEntities(channel))
@@ -295,6 +306,7 @@ discordClient.on("message", ({ content, channel }) => {
 
       case "|A":
       case "|aspect-":
+        if (!isGM) return needGM();
         if (tokens.length !== 3) return sendUsage(channel);
         entityAspectIndexNamed(tokens[1], tokens[2])
           .then(([e, a]) => {
@@ -306,6 +318,7 @@ discordClient.on("message", ({ content, channel }) => {
 
       case "|a1":
       case "|aspect+1":
+        if (!isGM) return needGM();
         if (tokens.length < 3) return sendUsage(channel);
         addAspect(tokens[1], AspectType.Aspect, tokens.slice(2).join(" "), 1)
           .then(() => sendEntities(channel))
@@ -314,6 +327,7 @@ discordClient.on("message", ({ content, channel }) => {
 
       case "|a2":
       case "|aspect+2":
+        if (!isGM) return needGM();
         if (tokens.length < 3) return sendUsage(channel);
         addAspect(tokens[1], AspectType.Aspect, tokens.slice(2).join(" "), 2)
           .then(() => sendEntities(channel))
@@ -322,6 +336,7 @@ discordClient.on("message", ({ content, channel }) => {
 
       case "|b":
       case "|boost":
+        if (!isGM) return needGM();
         if (tokens.length < 3) return sendUsage(channel);
         addAspect(tokens[1], AspectType.Boost, tokens.slice(2).join(" "), 1)
           .then(() => sendEntities(channel))
@@ -330,6 +345,7 @@ discordClient.on("message", ({ content, channel }) => {
 
       case "|e":
       case "|entity+":
+        if (!isGM) return needGM();
         if (tokens.length < 2) return sendUsage(channel);
         entities.push({ aspects: [], name: tokens.slice(1).join(" ") });
         sendEntities(channel);
@@ -337,6 +353,7 @@ discordClient.on("message", ({ content, channel }) => {
 
       case "|E":
       case "|entity-":
+        if (!isGM) return needGM();
         if (tokens.length !== 2) return sendUsage(channel);
         entityIndexNamed(tokens[1].toLowerCase())
           .then((e) => {
@@ -348,6 +365,7 @@ discordClient.on("message", ({ content, channel }) => {
 
       case "|f":
       case "|fate+":
+        if (!isGM) return needGM();
         if (tokens.length !== 2) return sendUsage(channel);
         entityIndexNamed(tokens[1])
           .then((e) => {
@@ -359,6 +377,7 @@ discordClient.on("message", ({ content, channel }) => {
 
       case "|f=":
       case "|fate=":
+        if (!isGM) return needGM();
         if (tokens.length !== 3) return sendUsage(channel);
         entityIndexNamed(tokens[2])
           .then((e) => {
@@ -370,6 +389,7 @@ discordClient.on("message", ({ content, channel }) => {
 
       case "|F":
       case "|fate-":
+        if (!isGM) return needGM();
         if (tokens.length !== 2) return sendUsage(channel);
         entityIndexNamed(tokens[1])
           .then((e) => {
@@ -387,6 +407,7 @@ discordClient.on("message", ({ content, channel }) => {
 
       case "|i":
       case "|invoke+":
+        if (!isGM) return needGM();
         if (tokens.length !== 3) return sendUsage(channel);
         entityAspectIndexNamed(tokens[1], tokens[2])
           .then(([e, a]) => {
@@ -398,6 +419,7 @@ discordClient.on("message", ({ content, channel }) => {
 
       case "|i=":
       case "|invoke=":
+        if (!isGM) return needGM();
         if (tokens.length !== 4) return sendUsage(channel);
         entityAspectIndexNamed(tokens[2], tokens[3])
           .then(([e, a]) => {
@@ -409,6 +431,7 @@ discordClient.on("message", ({ content, channel }) => {
 
       case "|I":
       case "|invoke-":
+        if (!isGM) return needGM();
         if (tokens.length !== 3) return sendUsage(channel);
         entityAspectIndexNamed(tokens[1], tokens[2])
           .then(([e, a]) => {
