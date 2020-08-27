@@ -36,40 +36,6 @@ function die() {
   return Math.floor(Math.random() * 3) - 1;
 }
 
-function fateDieEmoji(num) {
-  if (num < 0) return ":arrow_down_small:";
-  if (num > 0) return ":arrow_up_small:";
-  return ":record_button:";
-}
-
-function fatePointsEmoji(points) {
-  if (typeof points === "undefined") return "";
-  switch (points) {
-    case 0:
-      return `${ensp}:zero:`;
-    case 1:
-      return `${ensp}:one:`;
-    case 2:
-      return `${ensp}:two:`;
-    case 3:
-      return `${ensp}:three:`;
-    case 4:
-      return `${ensp}:four:`;
-    case 5:
-      return `${ensp}:five:`;
-    case 6:
-      return `${ensp}:six:`;
-    case 7:
-      return `${ensp}:seven:`;
-    case 8:
-      return `${ensp}:eight:`;
-    case 9:
-      return `${ensp}:nine:`;
-    default:
-      return `${ensp}${points}`;
-  }
-}
-
 function entityAspectIndexNamed(entityStart, aspectStart) {
   return entityIndexNamed(entityStart).then((e) => {
     const asp = aspectStart.toLowerCase();
@@ -118,36 +84,90 @@ function entityIndexNamed(entityStart) {
   });
 }
 
-function rating(score) {
+function entityTrackIndexNamed(entityStart, trackStart) {
+  return entityIndexNamed(entityStart).then((e) => {
+    const trk = trackStart.toLowerCase();
+    return new Promise((resolve, reject) => {
+      const exactMatch = entities[e].tracks.findIndex(
+        ({ name }) => name.toLowerCase() === trk
+      );
+      if (exactMatch > -1) return resolve([e, exactMatch]);
+
+      const roughMatches = entities[e].tracks.reduce(
+        (ts, { name }, t) =>
+          name.toLowerCase().startsWith(trk) ? [...ts, t] : ts,
+        []
+      );
+      if (roughMatches.length > 1) {
+        return reject(`I found multiple tracks starting with "${trk}"`);
+      }
+      if (roughMatches.length < 1) {
+        return reject(`I couldn't find a track starting with "${trk}"`);
+      }
+      resolve([e, roughMatches[0]]);
+    });
+  });
+}
+
+function fateDieEmoji(num) {
+  if (num < 0) return ":arrow_down_small:";
+  if (num > 0) return ":arrow_up_small:";
+  return ":record_button:";
+}
+
+function numberEmoji(num) {
+  switch (num) {
+    case 0:
+      return ":zero:";
+    case 1:
+      return ":one:";
+    case 2:
+      return ":two:";
+    case 3:
+      return ":three:";
+    case 4:
+      return ":four:";
+    case 5:
+      return ":five:";
+    case 6:
+      return ":six:";
+    case 7:
+      return ":seven:";
+    case 8:
+      return ":eight:";
+    case 9:
+      return ":nine:";
+  }
+}
+
+function ratingText(score) {
   switch (score) {
     case -4:
-      return " Horrifying";
+      return "Horrifying";
     case -3:
-      return " Catastrophic";
+      return "Catastrophic";
     case -2:
-      return " Terrible";
+      return "Terrible";
     case -1:
-      return " Poor";
+      return "Poor";
     case 0:
-      return " Mediocre";
+      return "Mediocre";
     case 1:
-      return " Average";
+      return "Average";
     case 2:
-      return " Fair";
+      return "Fair";
     case 3:
-      return " Good";
+      return "Good";
     case 4:
-      return " Great";
+      return "Great";
     case 5:
-      return " Superb";
+      return "Superb";
     case 6:
-      return " Fantastic";
+      return "Fantastic";
     case 7:
-      return " Epic";
+      return "Epic";
     case 8:
-      return " Legendary";
-    default:
-      return "";
+      return "Legendary";
   }
 }
 
@@ -164,11 +184,15 @@ function sendEntities(channel) {
   channel.send("", {
     embed: {
       color: 0x5e81ac,
-      fields: entities.map(({ aspects, fatePoints, name }) => ({
-        name: `${name}${fatePointsEmoji(fatePoints)}`,
-        value:
-          aspects.length > 0 ? aspects.map(aspectText) : `***No aspects***`,
-      })),
+      fields: entities.map(({ aspects, fatePoints, name, tracks }) => {
+        const fp = fatePoints ? `${ensp}${numberEmoji(fatePoints)}` : "";
+        const st = tracks ? `${ensp}${tracks.map(trackSpan).join(ensp)}` : "";
+        return {
+          name: `${name}${fp}${st}`,
+          value:
+            aspects.length > 0 ? aspects.map(aspectText) : `***No aspects***`,
+        };
+      }),
     },
   });
   saveEntities();
@@ -177,8 +201,9 @@ function sendEntities(channel) {
 function sendUsage(channel) {
   channel.send("", {
     embed: {
-      title: "Commands",
       color: 0xebcb8b,
+      title: "Commands",
+      description: 'All commands are prefixed with `|` (the "pipe" character)',
       fields: [
         {
           name: "|",
@@ -211,6 +236,17 @@ function sendUsage(channel) {
           value: [
             "Add a boost *aspect* to *entity* (with 1 free invoke)",
             "Shortcut: `|b`",
+          ],
+        },
+        {
+          name: "|clear *entity* *type*",
+          value: ["Clear stress of *type* on the *entity*", "Shortcut: `|C`"],
+        },
+        {
+          name: "|clearall *type*",
+          value: [
+            "Clear all stress of *type* across all entities",
+            "Shortcut: `|CC`",
           ],
         },
         {
@@ -261,6 +297,34 @@ function sendUsage(channel) {
             "Shortcut: `|r`",
           ],
         },
+        {
+          name: "|stress+ *number* *entity* *type*",
+          value: [
+            "Add *type* stress (consuming a *number* box) on *entity*",
+            "Shortcut: `|s`",
+          ],
+        },
+        {
+          name: "|stress- *number* *entity* *type*",
+          value: [
+            "Remove *type* stress (clearing a *number* box) on *entity*",
+            "Shortcut: `|S`",
+          ],
+        },
+        {
+          name: "|track+ *entity* *type* *values*",
+          value: [
+            "Create a stress track for *entity* of *type* with *values* as a string of ratings (e.g., `123` for :one: :two: :three:)",
+            "Shortcut: `|t`",
+          ],
+        },
+        {
+          name: "|track- *entity* *type*",
+          value: [
+            "Remove the stress track of *type* for *entity*",
+            "Shortcut: `|T`",
+          ],
+        },
       ],
     },
   });
@@ -275,6 +339,13 @@ function sendError(channel) {
       },
     });
   };
+}
+
+function trackSpan({ name, ratings }) {
+  const emojis = ratings
+    .map(({ clear, value }) => (clear ? numberEmoji(value) : ":x:"))
+    .join(" ");
+  return `${name} ${emojis}`;
 }
 
 discordClient.on("message", ({ author, content, channel, guild, member }) => {
@@ -341,6 +412,16 @@ discordClient.on("message", ({ author, content, channel, guild, member }) => {
         addAspect(tokens[1], AspectType.Boost, tokens.slice(2).join(" "), 1)
           .then(() => sendEntities(channel))
           .catch(sendError(channel));
+        break;
+
+      case "|C":
+      case "|clear":
+        // |stressclear *entity* *type*
+        break;
+
+      case "|CC":
+      case "|clearall":
+        // |stressclearall *type*
         break;
 
       case "|e":
@@ -460,11 +541,61 @@ discordClient.on("message", ({ author, content, channel, guild, member }) => {
               c
             )} ${fateDieEmoji(d)}${ensp}${
               tokens[1]
-            }${ensp}➤${ensp}**${res}**${rating(res)}`,
+            }${ensp}➤${ensp}**${res}**${ratingText(res)}`,
           },
         });
         break;
       }
+
+      case "|s":
+      case "|stress+":
+        if (!isGM) return needGM();
+        if (tokens.length !== 4) return sendUsage(channel);
+        // TODO |stress+ *number *entity* *type*
+        break;
+
+      case "|S":
+      case "|stress-":
+        if (!isGM) return needGM();
+        if (tokens.length !== 4) return sendUsage(channel);
+        // TODO |stress- *number* *entity* *type*
+        break;
+
+      case "|t":
+      case "|track+":
+        if (!isGM) return needGM();
+        if (tokens.length !== 4) return sendUsage(channel);
+        entityIndexNamed(tokens[1])
+          .then((e) => {
+            const ratings = [];
+            for (let i = 0; i < tokens[3].length; i++) {
+              const rating = parseInt(tokens[3][i], 10);
+              if (Number.isNaN(rating)) {
+                return sendError(channel)(
+                  `Invalid ratings string "${tokens[3]}"`
+                );
+              }
+              ratings.push(rating);
+            }
+            if (!("track" in entities[e])) entities[e].tracks = [];
+            entities[e].tracks.push({
+              name: tokens[2],
+              ratings: ratings.map((value) => ({
+                clear: true,
+                value,
+              })),
+            });
+            sendEntities(channel);
+          })
+          .catch(sendError(channel));
+        break;
+
+      case "|T":
+      case "|track-":
+        if (!isGM) return needGM();
+        if (tokens.length !== 3) return sendUsage(channel);
+        // TODO |track- *entity* *type*
+        break;
 
       default:
         sendUsage(channel);
