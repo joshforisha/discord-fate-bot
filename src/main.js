@@ -189,7 +189,10 @@ function sendEntities(channel) {
     embed: {
       color: 0x5e81ac,
       fields: entities.map(({ aspects, fatePoints, name, tracks }) => {
-        const fp = fatePoints ? `${ensp}${numberEmoji(fatePoints)}` : "";
+        const fp =
+          typeof fatePoints === "number"
+            ? `${ensp}${numberEmoji(fatePoints)}`
+            : "";
         const st = tracks ? `${ensp}${tracks.map(trackSpan).join(ensp)}` : "";
         return {
           name: `${name}${fp}${st}`,
@@ -598,7 +601,6 @@ discordClient.on("message", ({ author, content, channel, guild, member }) => {
       case "|track-":
         if (!isGM) return needGM();
         if (tokens.length !== 3) return sendUsage(channel);
-        // TODO |track- *entity* *type*
         entityTrackIndexNamed(tokens[1], tokens[2])
           .then(([e, t]) => {
             entities[e].tracks.splice(t, 1);
