@@ -71,27 +71,50 @@ function fatePointsEmoji(points) {
 }
 
 function entityAspectIndexNamed(entityStart, aspectStart) {
-  const asp = aspectStart.toLowerCase();
-  return entityIndexNamed(entityStart).then(
-    (e) =>
-      new Promise((resolve, reject) => {
-        const a = entities[e].aspects.findIndex(({ name }) =>
-          name.toLowerCase().startsWith(asp)
-        );
-        if (a > -1) return resolve([e, a]);
-        reject(`I couldn't find an aspect starting with "${asp}"`);
-      })
-  );
+  return entityIndexNamed(entityStart).then((e) => {
+    const asp = aspectStart.toLowerCase();
+    return new Promise((resolve, reject) => {
+      const exactMatch = entities[e].aspects.findIndex(
+        ({ name }) => name.toLowerCase() === asp
+      );
+      if (exactMatch > -1) return resolve([e, exactMatch]);
+
+      const roughMatches = entities[e].aspects.reduce(
+        (as, { name }, a) =>
+          name.toLowerCase().startsWith(asp) ? [...as, a] : as,
+        []
+      );
+      if (roughMatches.length > 1) {
+        return reject(`I found multiple aspects starting with "${asp}"`);
+      }
+      if (roughMatches.length < 1) {
+        return reject(`I couldn't find an aspect starting with "${asp}"`);
+      }
+      resolve([e, roughMatches[0]]);
+    });
+  });
 }
 
 function entityIndexNamed(entityStart) {
   const ent = entityStart.toLowerCase();
   return new Promise((resolve, reject) => {
-    const e = entities.findIndex(({ name }) =>
-      name.toLowerCase().startsWith(ent)
+    const exactMatch = entities.findIndex(
+      ({ name }) => name.toLowerCase() === ent
     );
-    if (e > -1) return resolve(e);
-    reject(`I couldn't find an entity starting with "${ent}"`);
+    if (exactMatch > -1) return resolve(exactMatch);
+
+    const roughMatches = entities.reduce(
+      (es, { name }, e) =>
+        name.toLowerCase().startsWith(ent) ? [...es, e] : es,
+      []
+    );
+    if (roughMatches.length > 1) {
+      return reject(`I found multiple entities starting with "${ent}"`);
+    }
+    if (roughMatches.length < 1) {
+      return reject(`I couldn't find an entity starting with "${ent}"`);
+    }
+    resolve(roughMatches[0]);
   });
 }
 
@@ -157,12 +180,6 @@ function sendUsage(channel) {
       title: "Commands",
       color: 0xebcb8b,
       fields: [
-        /*
-        {
-          name: "",
-          value: ["", "Shortcut: `|`"],
-        },
-        // */
         {
           name: "|",
           value: "Output the current entities list",
@@ -269,7 +286,7 @@ discordClient.on("message", ({ content, channel }) => {
         break;
 
       case "|a":
-      case "|aspect":
+      case "|aspect+":
         if (tokens.length < 3) return sendUsage(channel);
         addAspect(tokens[1], AspectType.Aspect, tokens.slice(2).join(" "))
           .then(() => sendEntities(channel))
@@ -278,10 +295,10 @@ discordClient.on("message", ({ content, channel }) => {
 
       case "|A":
       case "|aspect-":
-        if (tokens.length !== 2) return sendUsage(channel);
-        entityIndexNamed(tokens[1].toLowerCase())
-          .then((e) => {
-            entities.splice(e, 1);
+        if (tokens.length !== 3) return sendUsage(channel);
+        entityAspectIndexNamed(tokens[1], tokens[2])
+          .then(([e, a]) => {
+            entities[e].aspects.splice(a, 1);
             sendEntities(channel);
           })
           .catch(sendError(channel));
@@ -320,10 +337,10 @@ discordClient.on("message", ({ content, channel }) => {
 
       case "|E":
       case "|entity-":
-        if (tokens.length !== 3) return sendUsage(channel);
-        entityAspectIndexNamed(tokens[1], tokens[2])
-          .then(([e, a]) => {
-            entities[e].aspects.slice(a, 1);
+        if (tokens.length !== 2) return sendUsage(channel);
+        entityIndexNamed(tokens[1].toLowerCase())
+          .then((e) => {
+            entities.splice(e, 1);
             sendEntities(channel);
           })
           .catch(sendError(channel));
