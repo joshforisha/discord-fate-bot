@@ -88,6 +88,10 @@ function entityTrackIndexNamed(entityStart, trackStart) {
   return entityIndexNamed(entityStart).then((e) => {
     const trk = trackStart.toLowerCase();
     return new Promise((resolve, reject) => {
+      if (!("tracks" in entities[e])) {
+        return reject(`No tracks found for entity "${entities[e].name}"`);
+      }
+
       const exactMatch = entities[e].tracks.findIndex(
         ({ name }) => name.toLowerCase() === trk
       );
@@ -595,6 +599,13 @@ discordClient.on("message", ({ author, content, channel, guild, member }) => {
         if (!isGM) return needGM();
         if (tokens.length !== 3) return sendUsage(channel);
         // TODO |track- *entity* *type*
+        entityTrackIndexNamed(tokens[1], tokens[2])
+          .then(([e, t]) => {
+            entities[e].tracks.splice(t, 1);
+            if (entities[e].tracks.length < 1) delete entities[e].tracks;
+            sendEntities(channel);
+          })
+          .catch(sendError(channel));
         break;
 
       default:
