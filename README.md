@@ -1,6 +1,6 @@
 # Fate Bot
 
-A Discord bot for playing the [Fate RPG](https://fate-srd.com)
+A bot for playing [Fate RPG](https://fate-srd.com) completely within Discord.
 
 ## Setup
 
