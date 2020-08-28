@@ -27,6 +27,7 @@ All commands are prefixed with `|` (the "pipe" character).
 | `\|fate+ *entity*` | `\|f` | Give a fate point to *entity* |
 | `\|fate- *entity*` | `\|F` | Take a fate point from *entity* |
 | `\|fate= *points* *entity*` | `\|f=` | Set fate points for the *entity* |
+| `\|help` | `\|h` | Print this command list to Discord |
 | `\|invoke+ *entity* *aspect*` | `\|i` | Add a free invoke to *aspect* on *entity* |
 | `\|invoke- *entity* *aspect*` | `\|I` | Remove a free invoke to *aspect* on *entity* |
 | `\|invoke= *count* *entity* *aspect*` | `\|i=` | Set free invokes to *count* on the *aspect* for *entity* |

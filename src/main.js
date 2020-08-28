@@ -277,6 +277,10 @@ function sendUsage(channel) {
           value: ["Take a fate point from *entity*", "Shortcut: `|F`"],
         },
         {
+          name: "|help",
+          value: ["Print this usage message", "Shortcut: `|h`"],
+        },
+        {
           name: "|invoke+ *entity* *aspect*",
           value: [
             "Add a free invoke to *aspect* on *entity*",
