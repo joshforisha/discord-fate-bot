@@ -305,14 +305,14 @@ function sendUsage(channel) {
           ],
         },
         {
-          name: "|stress+ *number* *entity* *type*",
+          name: "|stress+ *entity* *type* *number*",
           value: [
             "Add *type* stress (consuming a *number* box) on *entity*",
             "Shortcut: `|s`",
           ],
         },
         {
-          name: "|stress- *number* *entity* *type*",
+          name: "|stress- *entity* *type* *number*",
           value: [
             "Remove *type* stress (clearing a *number* box) on *entity*",
             "Shortcut: `|S`",
@@ -423,13 +423,35 @@ discordClient.on("message", ({ author, content, channel, guild, member }) => {
 
       case "|C":
       case "|clear":
-        // |stressclear *entity* *type*
+        if (!isGM) return needGM();
+        if (tokens.length !== 3) return sendUsage(channel);
+        entityTrackIndexNamed(tokens[1], tokens[2])
+          .then(([e, t]) => {
+            for (let r in entities[e].tracks[t].ratings) {
+              entities[e].tracks[t].ratings[r].clear = true;
+            }
+            sendEntities(channel);
+          })
+          .catch(sendError(channel));
         break;
 
       case "|CC":
-      case "|clearall":
-        // |stressclearall *type*
+      case "|clearall": {
+        if (!isGM) return needGM();
+        if (tokens.length !== 2) return sendUsage(channel);
+        const trk = tokens[1].toLowerCase();
+        for (let e in entities) {
+          if (!("tracks" in entities[e])) continue;
+          for (let t in entities[e].tracks) {
+            if (entities[e].tracks[t].name.toLowerCase() !== trk) continue;
+            for (let r in entities[e].tracks[t].ratings) {
+              entities[e].tracks[t].ratings[r].clear = true;
+            }
+          }
+        }
+        sendEntities(channel);
         break;
+      }
 
       case "|e":
       case "|entity+":
@@ -555,18 +577,50 @@ discordClient.on("message", ({ author, content, channel, guild, member }) => {
       }
 
       case "|s":
-      case "|stress+":
+      case "|stress+": {
         if (!isGM) return needGM();
         if (tokens.length !== 4) return sendUsage(channel);
-        // TODO |stress+ *number *entity* *type*
+        const rating = parseInt(tokens[3], 10);
+        if (Number.isNaN(rating)) {
+          return sendError(channel)(`I need a number rating to mark stress`);
+        }
+        entityTrackIndexNamed(tokens[1], tokens[2])
+          .then(([e, t]) => {
+            const r = entities[e].tracks[t].ratings.findIndex(
+              ({ clear, value }) => clear && value === rating
+            );
+            if (r < 0) {
+              return sendError(channel)(`No available ${rating} boxes`);
+            }
+            entities[e].tracks[t].ratings[r].clear = false;
+            sendEntities(channel);
+          })
+          .catch(sendError(channel));
         break;
+      }
 
       case "|S":
-      case "|stress-":
+      case "|stress-": {
         if (!isGM) return needGM();
         if (tokens.length !== 4) return sendUsage(channel);
-        // TODO |stress- *number* *entity* *type*
+        const rating = parseInt(tokens[3], 10);
+        if (Number.isNaN(rating)) {
+          return sendError(channel)(`I need a number rating to clear stress`);
+        }
+        entityTrackIndexNamed(tokens[1], tokens[2])
+          .then(([e, t]) => {
+            const r = entities[e].tracks[t].ratings.findIndex(
+              ({ clear, value }) => !clear && value === rating
+            );
+            if (r < 0) {
+              return sendError(channel)(`No marked ${rating} boxes`);
+            }
+            entities[e].tracks[t].ratings[r].clear = true;
+            sendEntities(channel);
+          })
+          .catch(sendError(channel));
         break;
+      }
 
       case "|t":
       case "|track+":
@@ -584,7 +638,7 @@ discordClient.on("message", ({ author, content, channel, guild, member }) => {
               }
               ratings.push(rating);
             }
-            if (!("track" in entities[e])) entities[e].tracks = [];
+            if (!("tracks" in entities[e])) entities[e].tracks = [];
             entities[e].tracks.push({
               name: tokens[2],
               ratings: ratings.map((value) => ({
