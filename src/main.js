@@ -609,13 +609,14 @@ discordClient.on("message", ({ author, content, channel, guild, member }) => {
         }
         entityTrackIndexNamed(tokens[1], tokens[2])
           .then(([e, t]) => {
-            const r = entities[e].tracks[t].ratings.findIndex(
-              ({ clear, value }) => !clear && value === rating
-            );
+            const ratings = [...entities[e].tracks[t].ratings];
+            const r = ratings
+              .reverse()
+              .findIndex(({ clear, value }) => !clear && value === rating);
             if (r < 0) {
               return sendError(channel)(`No marked ${rating} boxes`);
             }
-            entities[e].tracks[t].ratings[r].clear = true;
+            entities[e].tracks[t].ratings[ratings.length - 1 - r].clear = true;
             sendEntities(channel);
           })
           .catch(sendError(channel));
