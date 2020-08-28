@@ -2,7 +2,9 @@
 
 A bot for playing [Fate RPG](https://fate-srd.com) completely within Discord.
 
-![Example image of bot output](https://github.com/joshforisha/fate-bot/blob/main/images/example.png)
+![Example image of bot output](https://github.com/joshforisha/fate-bot/blob/main/images/output-example.png)
+
+![Example image of roll prompt and output](https://github.com/joshforisha/fate-bot/blob/main/images/roll-example.png)
 
 At this point, the bot is meant to be run locally. The current state of the entities (including all aspects, fate points, and stress tracks) are saved in an `entities.json` at the root of the project.
 

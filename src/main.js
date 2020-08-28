@@ -568,13 +568,14 @@ discordClient.on("message", ({ author, content, channel, guild, member }) => {
         const c = die();
         const d = die();
         const res = a + b + c + d + mod;
+        const resText = ratingText(res);
         channel.send({
           embed: {
             description: `${fateDieEmoji(a)} ${fateDieEmoji(b)} ${fateDieEmoji(
               c
-            )} ${fateDieEmoji(d)}${ensp}${
-              tokens[1]
-            }${ensp}➤${ensp}**${res}**${ratingText(res)}`,
+            )} ${fateDieEmoji(d)}${ensp}${tokens[1]}${ensp}➤${ensp}**${res}**${
+              resText ? ensp : ""
+            }${resText}`,
           },
         });
         break;
