@@ -5,6 +5,7 @@ export let entities = [];
 export function addAspect(entityStart, type, name, freeInvokes = 0) {
   return entityIndexNamed(entityStart).then((e) => {
     entities[e].aspects.push({ name, freeInvokes, type });
+    saveEntities();
   });
 }
 

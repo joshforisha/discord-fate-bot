@@ -1,4 +1,4 @@
-import { entities, entityIndexNamed } from "../state.js";
+import { entities, entityIndexNamed, saveEntities } from "../state.js";
 
 export const actions = [
   {
@@ -12,6 +12,7 @@ export const actions = [
         .then((e) => {
           entities[e].fatePoints = (entities[e].fatePoints || 0) + 1;
           resolve();
+          saveEntities();
         })
         .catch(reject);
     },
@@ -31,6 +32,7 @@ export const actions = [
         .then((e) => {
           entities[e].fatePoints = points;
           resolve();
+          saveEntities();
         })
         .catch(reject);
     },
@@ -52,6 +54,7 @@ export const actions = [
             }
           }
           resolve();
+          saveEntities();
         })
         .catch(reject);
     },

@@ -1,4 +1,4 @@
-import { entities, entityTrackIndexNamed } from "../state.js";
+import { entities, entityTrackIndexNamed, saveEntities } from "../state.js";
 
 export const actions = [
   {
@@ -14,6 +14,7 @@ export const actions = [
             entities[e].tracks[t].ratings[r].clear = true;
           }
           resolve();
+          saveEntities();
         })
         .catch(reject);
     },
@@ -36,6 +37,7 @@ export const actions = [
         }
       }
       resolve();
+      saveEntities();
     },
   },
   {
@@ -57,6 +59,7 @@ export const actions = [
           }
           entities[e].tracks[t].ratings[r].clear = false;
           resolve();
+          saveEntities();
         })
         .catch(reject);
     },
@@ -83,6 +86,7 @@ export const actions = [
           }
           entities[e].tracks[t].ratings[ratings.length - 1 - r].clear = true;
           resolve();
+          saveEntities();
         })
         .catch(reject);
     },

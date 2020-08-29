@@ -1,8 +1,7 @@
 import actions from "./actions/all.js";
 import Dotenv from "dotenv";
-import { aspectText, ensp, numberEmoji, trackSpan } from "./view.js";
 import { Client } from "discord.js";
-import { entities, saveEntities } from "./state.js";
+import { sendEntities, sendError } from "./view.js";
 
 Dotenv.config();
 
@@ -23,41 +22,6 @@ process.on("SIGINT", () => {
   console.log("Disconnected");
   process.exit(0);
 });
-
-function sendEntities(channel) {
-  if (entities.length < 1) {
-    return channel.send("***No entities***");
-  }
-  channel.send("", {
-    embed: {
-      color: 0x5e81ac,
-      fields: entities.map(({ aspects, fatePoints, name, tracks }) => {
-        const fp =
-          typeof fatePoints === "number"
-            ? `${ensp}${numberEmoji(fatePoints)}`
-            : "";
-        const st = tracks ? `${ensp}${tracks.map(trackSpan).join(ensp)}` : "";
-        return {
-          name: `${name}${fp}${st}`,
-          value:
-            aspects.length > 0 ? aspects.map(aspectText) : `***No aspects***`,
-        };
-      }),
-    },
-  });
-  saveEntities();
-}
-
-function sendError(channel) {
-  return (err) => {
-    channel.send("", {
-      embed: {
-        color: 0xbf616a,
-        title: err,
-      },
-    });
-  };
-}
 
 function sendUsage(channel) {
   channel.send("", {

@@ -1,5 +1,10 @@
 import { AspectType } from "../fate.js";
-import { addAspect, entities, entityAspectIndexNamed } from "../state.js";
+import {
+  addAspect,
+  entities,
+  entityAspectIndexNamed,
+  saveEntities,
+} from "../state.js";
 
 export const actions = [
   {
@@ -25,6 +30,7 @@ export const actions = [
         .then(([e, a]) => {
           entities[e].aspects.splice(a, 1);
           resolve();
+          saveEntities();
         })
         .catch(reject);
     },

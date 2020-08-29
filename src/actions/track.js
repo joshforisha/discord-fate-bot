@@ -1,4 +1,9 @@
-import { entities, entityIndexNamed, entityTrackIndexNamed } from "../state.js";
+import {
+  entities,
+  entityIndexNamed,
+  entityTrackIndexNamed,
+  saveEntities,
+} from "../state.js";
 
 export const actions = [
   {
@@ -28,6 +33,7 @@ export const actions = [
             })),
           });
           resolve();
+          saveEntities();
         })
         .catch(reject);
     },
@@ -44,6 +50,7 @@ export const actions = [
           entities[e].tracks.splice(t, 1);
           if (entities[e].tracks.length < 1) delete entities[e].tracks;
           resolve();
+          saveEntities();
         })
         .catch(reject);
     },

@@ -1,4 +1,4 @@
-import { entities, entityIndexNamed } from "../state.js";
+import { entities, entityIndexNamed, saveEntities } from "../state.js";
 
 export const actions = [
   {
@@ -10,6 +10,7 @@ export const actions = [
     run: (name, resolve) => {
       entities.push({ aspects: [], name: name.join(" ") });
       resolve();
+      saveEntities();
     },
   },
   {
@@ -23,6 +24,7 @@ export const actions = [
         .then((e) => {
           entities.splice(e, 1);
           resolve();
+          saveEntities();
         })
         .catch(reject);
     },

@@ -1,4 +1,4 @@
-import { entities, entityAspectIndexNamed } from "../state.js";
+import { entities, entityAspectIndexNamed, saveEntities } from "../state.js";
 
 export const actions = [
   {
@@ -12,6 +12,7 @@ export const actions = [
         .then(([e, a]) => {
           entities[e].aspects[a].freeInvokes += 1;
           resolve();
+          saveEntities();
         })
         .catch(reject);
     },
@@ -31,6 +32,7 @@ export const actions = [
         .then(([e, a]) => {
           entities[e].aspects[a].freeInvokes = count;
           resolve();
+          saveEntities();
         })
         .catch(reject);
     },
@@ -49,6 +51,7 @@ export const actions = [
             entities[e].aspects[a].freeInvokes - 1
           );
           resolve();
+          saveEntities();
         })
         .catch(reject);
     },
