@@ -1,4 +1,4 @@
-# Fate Bot
+# Fate Discord Bot
 
 A bot for playing [Fate RPG](https://fate-srd.com) completely within Discord.
 
