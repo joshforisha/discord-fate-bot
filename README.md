@@ -1,12 +1,12 @@
-# Fate Discord Bot
+# Discord Fate Bot
 
-A bot for playing [Fate RPG](https://fate-srd.com) completely within Discord.
+A self-hosted bot for playing [Fate RPG](https://fate-srd.com) completely within Discord.
 
 ![Example image of bot output](https://github.com/joshforisha/fate-bot/blob/main/images/output-example.png)
 
 ![Example image of roll prompt and output](https://github.com/joshforisha/fate-bot/blob/main/images/roll-example.png)
 
-At this point, the bot is meant to be run locally. The current state of the entities (including all aspects, fate points, skills, and stress tracks) are saved in an `entities.json` at the root of the project. After most successful commands, the bot will update the stored state and print out the affected state. Otherwise, an error message will be displayed.
+Right now, the bot is meant to be run locally. The current state of the entities (including all aspects, fate points, skills, and stress tracks) are saved in an `entities.json` at the root of the project. After most successful commands, the bot will update the stored state and print out the affected state. Otherwise, an error message will be displayed.
 
 A "GM" role is required on any server that the bot is invited to, which prevents any commands besides `|`, `|help`, `|skills`, and `|roll` from being run by players.
 
