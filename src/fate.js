@@ -1,45 +1,45 @@
 export const AspectType = {
-  Aspect: "ASPECT",
-  Boost: "BOOST",
-};
-
-export function die() {
-  return Math.floor(Math.random() * 3) - 1;
+  Aspect: 'ASPECT',
+  Boost: 'BOOST'
 }
 
-export function fateDieEmoji(num) {
-  if (num < 0) return ":arrow_down_small:";
-  if (num > 0) return ":arrow_up_small:";
-  return ":record_button:";
+export function die () {
+  return Math.floor(Math.random() * 3) - 1
 }
 
-export function ratingText(score) {
+export function fateDieEmoji (num) {
+  if (num < 0) return ':arrow_down_small:'
+  if (num > 0) return ':arrow_up_small:'
+  return ':record_button:'
+}
+
+export function ratingText (score) {
   switch (score) {
     case -4:
-      return "Horrifying";
+      return 'Horrifying'
     case -3:
-      return "Catastrophic";
+      return 'Catastrophic'
     case -2:
-      return "Terrible";
+      return 'Terrible'
     case -1:
-      return "Poor";
+      return 'Poor'
     case 0:
-      return "Mediocre";
+      return 'Mediocre'
     case 1:
-      return "Average";
+      return 'Average'
     case 2:
-      return "Fair";
+      return 'Fair'
     case 3:
-      return "Good";
+      return 'Good'
     case 4:
-      return "Great";
+      return 'Great'
     case 5:
-      return "Superb";
+      return 'Superb'
     case 6:
-      return "Fantastic";
+      return 'Fantastic'
     case 7:
-      return "Epic";
+      return 'Epic'
     case 8:
-      return "Legendary";
+      return 'Legendary'
   }
 }

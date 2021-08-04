@@ -5,15 +5,11 @@
     "start": "node src/main.js"
   },
   "devDependencies": {
-    "dotenv": "^8.2.0",
-    "eslint": "^7.4.0",
-    "eslint-config-prettier": "^6.11.0",
-    "eslint-plugin-prettier": "^3.1.4",
-    "prettier": "^2.0.5"
+    "dotenv": "^10.0.0"
   },
   "dependencies": {
-    "@discordjs/opus": "^0.3.2",
-    "bufferutil": "^4.0.1",
-    "discord.js": "^12.2.0"
+    "@discordjs/opus": "^0.5.3",
+    "bufferutil": "^4.0.3",
+    "discord.js": "^12.5.3"
   }
 }

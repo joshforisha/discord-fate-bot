@@ -1,87 +1,87 @@
-import { AspectType } from "./fate.js";
-import { entities } from "./state.js";
+import { AspectType } from './fate.js'
+import { entities } from './state.js'
 
-export function aspectText({ freeInvokes, name, type }) {
-  const sym = type === AspectType.Boost ? "*" : "";
-  const fis = freeInvokes > 0 ? ` \`${freeInvokes}\`` : "";
-  return `> ${sym}${name}${sym}${fis}`;
+export function aspectText ({ freeInvokes, name, type }) {
+  const sym = type === AspectType.Boost ? '*' : ''
+  const fis = freeInvokes > 0 ? ` \`${freeInvokes}\`` : ''
+  return `> ${sym}${name}${sym}${fis}`
 }
 
-export const ensp = " ";
+export const ensp = ' '
 
-export function numberEmoji(num) {
+export function numberEmoji (num) {
   switch (num) {
     case 0:
-      return ":zero:";
+      return ':zero:'
     case 1:
-      return ":one:";
+      return ':one:'
     case 2:
-      return ":two:";
+      return ':two:'
     case 3:
-      return ":three:";
+      return ':three:'
     case 4:
-      return ":four:";
+      return ':four:'
     case 5:
-      return ":five:";
+      return ':five:'
     case 6:
-      return ":six:";
+      return ':six:'
     case 7:
-      return ":seven:";
+      return ':seven:'
     case 8:
-      return ":eight:";
+      return ':eight:'
     case 9:
-      return ":nine:";
+      return ':nine:'
   }
 }
 
-export function sendEntities(channel) {
+export function sendEntities (channel) {
   if (entities.length < 1) {
-    return channel.send("***No entities***");
+    return channel.send('***No entities***')
   }
-  channel.send("", {
+  channel.send('', {
     embed: {
       color: 0x5e81ac,
       fields: entities.map(({ aspects, fatePoints, name, tracks }) => {
         const fp =
-          typeof fatePoints === "number"
+          typeof fatePoints === 'number'
             ? `${ensp}${numberEmoji(fatePoints)}`
-            : "";
-        const st = tracks ? `${ensp}${tracks.map(trackSpan).join(ensp)}` : "";
+            : ''
+        const st = tracks ? `${ensp}${tracks.map(trackSpan).join(ensp)}` : ''
         return {
           name: `${name}${fp}${st}`,
           value:
-            aspects.length > 0 ? aspects.map(aspectText) : `***No aspects***`,
-        };
-      }),
-    },
-  });
+            aspects.length > 0 ? aspects.map(aspectText) : '***No aspects***'
+        }
+      })
+    }
+  })
 }
 
-export function sendError(channel) {
+export function sendError (channel) {
   return (err) => {
-    channel.send("", {
+    channel.send('', {
       embed: {
         color: 0xbf616a,
-        description: err,
-      },
-    });
-  };
+        description: err.message
+      }
+    })
+  }
 }
 
-export function sendNotice(message) {
+export function sendNotice (message) {
   return (channel) => {
-    channel.send("", {
+    channel.send('', {
       embed: {
         color: 0x81a1c1,
-        description: message,
-      },
-    });
-  };
+        description: message
+      }
+    })
+  }
 }
 
-export function sendSkills({ name, skills }) {
+export function sendSkills ({ name, skills }) {
   return (channel) => {
-    channel.send("", {
+    channel.send('', {
       embed: {
         title: name,
         color: 0xb48ead,
@@ -89,17 +89,16 @@ export function sendSkills({ name, skills }) {
           .sort((a, b) => (a.name < b.name ? -1 : 1))
           .sort((a, b) => (a.rating > b.rating ? -1 : 1))
           .map(
-            ({ name, rating }) => `${rating > -1 ? "+" : ""}${rating} ${name}`
+            ({ name, rating }) => `${rating > -1 ? '+' : ''}${rating} ${name}`
           )
-          .join("\n"),
-      },
-    });
-  };
+          .join('\n')
+      }
+    })
+  }
 }
 
-export function trackSpan({ name, ratings }) {
-  const emojis = ratings
-    .map(({ clear, value }) => (clear ? numberEmoji(value) : ":x:"))
-    .join(" ");
-  return `${name} ${emojis}`;
+export function trackSpan ({ icon, ratings }) {
+  return ratings
+    .map(valid => (valid ? icon : ':x:'))
+    .join(' ')
 }
